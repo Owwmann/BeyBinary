@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Binary Options Signals</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #007bff;
+        }
+        /* Currency Pair Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        /* Button Styles */
+        .buy-button, .sell-button {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sell-button {
+            background-color: #dc3545;
+        }
+        .buy-button:hover {
+            background-color: #218838;
+        }
+        .sell-button:hover {
+            background-color: #c82333;
+        }
+        /* Subscription Form */
+        .subscription-form {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .subscription-form input[type="email"],
+        .subscription-form input[type="password"] {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 250px;
+        }
+        .subscription-form button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .subscription-form button:hover {
+            background-color: #0056b3;
+        }
+        /* Real-time Alert Display */
+        #alert-display {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            text-align: center;
+            font-weight: bold;
+        }
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 10px;
+            background-color: #343a40;
+            color: white;
+            border-radius: 4px;
+        }
+        /* Mobile-Friendly Adjustments */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            th, td {
+                padding: 8px 10px;
+            }
+            .subscription-form input[type="email"],
+            .subscription-form input[type="password"] {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Binary Options Signals</h1>
+        <div class="subscription-form">
+            <h2>Subscription Sign-Up</h2>
+            <input type="email" id="email" placeholder="Your Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="subscribe()">Subscribe ( $50/Month )</button>
+            <p id="subscription-message"></p>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Currency Pair</th>
+                    <th>Price</th>
+                    <th>MACD Signal</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="currency-data">
+                <!-- Data will be inserted here -->
+            </tbody>
+        </table>
+        <div id="alert-display">
+            <!-- Real-time alert messages -->
+        </div>
+        <footer>
+            <p>&copy; 2024 AI Trading Bot. All rights reserved. Binary options trading involves risk. Trade responsibly.</p>
+        </footer>
+    </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script>
+
+        const phpBaseUrl = '/php/'; // Adjust to your actual PHP directory
+
+        const currencyPairs = [
+            'AUD/CAD', 'AUD/CHF', 'AUD/JPY', 'AUD/NZD', 'AUD/USD',
+            'CAD/CHF', 'CAD/JPY', 'CHF/JPY', 'EUR/CAD', 'EUR/GBP',
+            'EUR/JPY', 'EUR/NZD', 'EUR/TRY', 'EUR/USD', 'GBP/AUD',
+            'GBP/JPY', 'GBP/USD', 'NZD/JPY', 'NZD/USD', 'USD/CAD',
+            'USD/CHF', 'USD/JPY'
+        ];
+
+        let subscriptionActive = false;
+        let alertTimeout;
+        async function getMarketData(symbol) {
+            try {
+              const response = await fetch(`${phpBaseUrl}get_market_data.php?symbol=${symbol}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data;
+
+            } catch (error) {
+                console.error('Error fetching market data:', error);
+                return null;
+            }
+        }
+        function generateTradingSignal(macd, signal) {
+            if (macd > signal) {
+                return 'Buy';
+            } else if (macd < signal) {
+                return 'Sell';
+            } else {
+                return 'Neutral';
+            }
+        }
+
+        async function updateCurrencyData() {
+            const currencyData = document.getElementById('currency-data');
+            currencyData.innerHTML = '';
+
+            for (const pair of currencyPairs) {
+                const data = await getMarketData(pair); //Data will be inserted here
+
+                if (data) {
+                    const macdResult = data.macdResult;
+                    const signal = generateTradingSignal(macdResult.macd, macdResult.signal);
+
+                    const row = `
+                        <tr>
+                            <td>${pair}</td>
+                            <td>${data.lastPrice}</td>
+                            <td>${signal}</td>
+                            <td>
+                                <button class="buy-button" onclick="executeTrade('${pair}', 'buy')">Buy</button>
+                                <button class="sell-button" onclick="executeTrade('${pair}', 'sell')">Sell</button>
+                            </td>
+                        </tr>
+                    `;
+                    currencyData.innerHTML += row;
+                }
+            }
+        }
+
+        async function executeTrade(symbol, action) {
+            if (!subscriptionActive) {
+                displayAlert('Subscription required to execute trades!', 'red');
+                return;
+            }
+            try {
+                const response = await fetch(`${phpBaseUrl}execute_trade.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        symbol: symbol,
+                        action: action,
+                        // Add any other necessary parameters
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Trade failed with status: ${response.status}`);
+                }
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    displayAlert(`Trade executed: ${action} on ${symbol}`, 'green');
+                } else {
+                    displayAlert(`Trade failed: ${result.error_message}`, 'red');
+                }
+
+            } catch (error) {
+                console.error('Error executing trade:', error);
+                displayAlert(`Trade error: ${error.message}`, 'red');
+            }
+        }
+        function displayAlert(message, color) {
+            const alertDisplay = document.getElementById('alert-display');
+            alertDisplay.textContent = message;
+            alertDisplay.style.backgroundColor = color;
+            clearTimeout(alertTimeout); // Clear previous timeout
+            alertTimeout = setTimeout(() => {
+                alertDisplay.textContent = '';
+                alertDisplay.style.backgroundColor = '';
+            }, 5000); // Clear after 5 seconds
+        }
+         function subscribe() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageDisplay = document.getElementById('subscription-message');
+
+            if (email && password) {
+                // Basic validation (replace with a proper backend validation)
+                if (password.length < 8) {
+                    messageDisplay.textContent = "Password must be at least 8 characters.";
+                    messageDisplay.style.color = 'red';
+                    return;
+                }
+
+                // Send subscription request to PHP backend
+                fetch(`${phpBaseUrl}subscribe.php`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        subscriptionActive = true;
+                        messageDisplay.textContent = 'Subscription successful! Accessing Premium content now...';
+                        messageDisplay.style.color = 'green';
+                    } else {
+                        messageDisplay.textContent = data.message;
+                        messageDisplay.style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error subscribing:', error);
+                    messageDisplay.textContent = 'Subscription error: ' + error.message;
+                    messageDisplay.style.color = 'red';
+                });
+            } else {
+                messageDisplay.textContent = 'Please enter your email and password.';
+                messageDisplay.style.color = 'red';
+            }
+        }
+         // Periodic updates (every 30 seconds)
+         setInterval(updateCurrencyData, 30000);
+
+         // Initial data load
+         updateCurrencyData();
+    </script>
+</body>
+</html>
